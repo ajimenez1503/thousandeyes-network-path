@@ -8,13 +8,30 @@ Source repository: https://github.com/ajimenez1503/thousandeyes-network-path
 
 This is a trace-specific graph inside a custom app. It does not change or embed the built-in Smartscape graph. A service can appear in multiple traces; the app only draws a link when the selected trace's span hierarchy connects those services.
 
+## Screenshots
+
+Select a test from the searchable dropdown, then select one of its recent traces:
+
+![Searchable ThousandEyes test dropdown](docs/images/test-dropdown.jpg)
+
+The selected trace is displayed as a connected service path:
+
+![Service path for a ThousandEyes trace](docs/images/trace-path-graph.jpg)
+
+These screenshots show sample data from the development environment. Test names, service names, and paths depend on the spans available in your environment.
+
+## Configure your Dynatrace environment
+
+Follow the [installation and configuration guide](docs/SETUP.md) to prepare trace data, point the app at your environment, and deploy it.
+
 ## Run locally
 
-Dynatrace App Toolkit currently supports Node.js 24. Install Node.js 24 before developing or deploying the app.
+Dynatrace App Toolkit currently requires Node.js 24. Install Node.js 24 before developing or deploying the app.
 
 ```bash
+git clone https://github.com/ajimenez1503/thousandeyes-network-path.git
 cd thousandeyes-network-path
-npm install
+npm ci
 npm run start
 ```
 
