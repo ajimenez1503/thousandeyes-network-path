@@ -1,7 +1,7 @@
 {
   "name": "thousandeyes-network-path",
-  "version": "0.1.1",
-  "description": "A Dynatrace app for viewing the service path of one ThousandEyes trace",
+  "version": "0.2.1",
+  "description": "A Dynatrace app for finding ThousandEyes tests and viewing a trace service path",
   "scripts": {
     "build": "dt-app build",
     "start": "dt-app dev",

@@ -1,6 +1,6 @@
 # ThousandEyes Network Path
 
-ThousandEyes Network Path is a Dynatrace App for viewing the Smartscape services observed in one distributed trace. Enter a 32-character trace ID, choose a search window, and select **Show path**. The app queries Grail spans and draws service-to-service links from their parent span relationships.
+ThousandEyes Network Path is a Dynatrace App for viewing the Smartscape services observed in one distributed trace. Search for a ThousandEyes test by name, select a matching test, and choose one of its recent traces. The app queries Grail spans and draws service-to-service links from their parent span relationships. You can also enter a 32-character trace ID directly.
 
 Deployed app: https://hkw74641.apps.dynatrace.com/ui/apps/my.trace.path.map/
 
@@ -20,7 +20,7 @@ npm run start
 
 The app is configured for `https://hkw74641.apps.dynatrace.com/` in `app.config.json`. The toolkit opens a browser and requests Dynatrace sign-in if necessary. The app and the signed-in user both need access to the spans and Smartscape data.
 
-For the trace shown during development, use `54864adb27bf9f0fb362add8e14199d6` with **Last 24 hours** while it remains in retention.
+For the sample data shown during development, search for `Demo Google` or enter trace ID `54864adb27bf9f0fb362add8e14199d6` while it remains in retention.
 
 ## Open from another Dynatrace app
 
@@ -38,7 +38,9 @@ Deployment writes the app to the configured Dynatrace environment. Review `app.c
 
 ## Data and limits
 
-- Grail query: `fetch spans` filtered by the selected `trace.id`.
+- Test search: `fetch spans` filtered by a case-insensitive substring of `thousandeyes.test.name`, grouped by test name and `thousandeyes.test.id`. The 50 most recently seen matches are shown.
+- Trace choices: spans for the selected test ID (or name when ID is absent), grouped by `trace.id`. The 30 most recently seen traces are shown.
+- Graph query: `fetch spans` filtered by the selected `trace.id`.
 - Node identity and label: `dt.smartscape.service` and `getNodeName()`.
 - Connections: nearest ancestor span in a different Smartscape service, deduplicated by service pair.
 - Search windows: 2 hours, 24 hours, or 7 days.

@@ -2,14 +2,16 @@
 
 ## Goal
 
-Let a user enter or open a distributed trace ID and immediately see the Smartscape service nodes and trace-specific connections without moving through a Notebook.
+Let a user find a ThousandEyes test by name, choose one of its recent traces, and see the Smartscape service nodes and trace-specific connections without moving through a Notebook. Keep direct trace ID entry and intent support.
 
 ## User journey
 
-1. Open the app or receive a `trace_id` intent.
-2. Choose a search window and submit a valid 32-character hexadecimal trace ID.
-3. See the services and directed connections inferred from the trace's parent spans.
-4. See clear empty and query-error states when data is unavailable.
+1. Choose a search window and search for at least two characters of a ThousandEyes test name.
+2. Select a matching test, identified by name and test ID.
+3. Select one of the recent traces for that test.
+4. See the services and directed connections inferred from the selected trace's parent spans.
+5. Alternatively, enter a valid 32-character hexadecimal trace ID or receive a `trace_id` intent.
+6. See clear empty and query-error states when data is unavailable.
 
 ## Boundaries
 

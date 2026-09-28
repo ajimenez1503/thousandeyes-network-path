@@ -25,6 +25,49 @@ export interface TraceGraph {
   spanCount: number;
 }
 
+export interface ThousandEyesTest {
+  testName: string | null;
+  testId: string | null;
+  lastSeen: string | null;
+}
+
+export interface TestTrace {
+  traceId: string | null;
+  lastSeen: string | null;
+  spanCount: number | null;
+}
+
+function dqlString(value: string): string {
+  return JSON.stringify(value);
+}
+
+export function buildTestSearchQuery(searchTerm: string, hours: 2 | 24 | 168): string {
+  const term = searchTerm.trim();
+  if (term.length < 2 || term.length > 100) {
+    throw new Error("A test-name search must contain 2 to 100 characters.");
+  }
+
+  return `fetch spans, from: now() - ${hours}h
+| filter isNotNull(thousandeyes.test.name)
+| filter contains(thousandeyes.test.name, ${dqlString(term)}, caseSensitive: false)
+| summarize lastSeen = max(start_time), by: {testName = thousandeyes.test.name, testId = toString(thousandeyes.test.id)}
+| sort lastSeen desc
+| limit 50`;
+}
+
+export function buildTestTracesQuery(test: ThousandEyesTest, hours: 2 | 24 | 168): string {
+  if (!test.testName) throw new Error("A test name is required.");
+  const testFilter = test.testId
+    ? `toString(thousandeyes.test.id) == ${dqlString(test.testId)}`
+    : `thousandeyes.test.name == ${dqlString(test.testName)}`;
+
+  return `fetch spans, from: now() - ${hours}h
+| filter ${testFilter}
+| summarize lastSeen = max(start_time), spanCount = count(), by: {traceId = toString(trace.id)}
+| sort lastSeen desc
+| limit 30`;
+}
+
 export function buildTraceGraph(spans: TraceSpan[]): TraceGraph {
   const spansById = new Map<string, TraceSpan>();
   const nodesById = new Map<string, TraceNode>();
