@@ -1,6 +1,6 @@
 # ThousandEyes Network Path
 
-ThousandEyes Network Path is a Dynatrace App for viewing the Smartscape services observed in one distributed trace. Search for a ThousandEyes test by name, select a matching test, and choose one of its recent traces. The app queries Grail spans and draws service-to-service links from their parent span relationships. You can also enter a 32-character trace ID directly.
+ThousandEyes Network Path is a Dynatrace App for viewing the Smartscape services observed in one distributed trace. Choose a ThousandEyes test from a searchable dropdown, then choose one of its recent traces. The app queries Grail spans and draws service-to-service links from their parent span relationships. You can also enter a 32-character trace ID directly.
 
 Deployed app: https://hkw74641.apps.dynatrace.com/ui/apps/my.trace.path.map/
 
@@ -20,7 +20,7 @@ npm run start
 
 The app is configured for `https://hkw74641.apps.dynatrace.com/` in `app.config.json`. The toolkit opens a browser and requests Dynatrace sign-in if necessary. The app and the signed-in user both need access to the spans and Smartscape data.
 
-For the sample data shown during development, search for `Demo Google` or enter trace ID `54864adb27bf9f0fb362add8e14199d6` while it remains in retention.
+For the sample data shown during development, choose `Demo Google` or enter trace ID `54864adb27bf9f0fb362add8e14199d6` while it remains in retention.
 
 ## Open from another Dynatrace app
 
@@ -38,7 +38,7 @@ Deployment writes the app to the configured Dynatrace environment. Review `app.c
 
 ## Data and limits
 
-- Test search: `fetch spans` filtered by a case-insensitive substring of `thousandeyes.test.name`, grouped by test name and `thousandeyes.test.id`. The 50 most recently seen matches are shown.
+- Test dropdown: `fetch spans` grouped by `thousandeyes.test.name` and `thousandeyes.test.id`. It loads automatically and can be filtered by name or ID in the dropdown. It lists tests observed in the selected Grail window, up to 10,000 most recently seen tests. Configured tests without spans in that window cannot appear.
 - Trace choices: spans for the selected test ID (or name when ID is absent), grouped by `trace.id`. The 30 most recently seen traces are shown.
 - Graph query: `fetch spans` filtered by the selected `trace.id`.
 - Node identity and label: `dt.smartscape.service` and `getNodeName()`.

@@ -3,7 +3,7 @@
   "environmentUrl": "https://hkw74641.apps.dynatrace.com/",
   "app": {
     "name": "ThousandEyes Network Path",
-    "version": "0.2.1",
+    "version": "0.3.0",
     "description": "Find ThousandEyes tests and view the service path of a selected trace",
     "id": "my.trace.path.map",
     "scopes": [

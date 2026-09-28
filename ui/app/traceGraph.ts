@@ -41,18 +41,12 @@ function dqlString(value: string): string {
   return JSON.stringify(value);
 }
 
-export function buildTestSearchQuery(searchTerm: string, hours: 2 | 24 | 168): string {
-  const term = searchTerm.trim();
-  if (term.length < 2 || term.length > 100) {
-    throw new Error("A test-name search must contain 2 to 100 characters.");
-  }
-
+export function buildTestListQuery(hours: 2 | 24 | 168): string {
   return `fetch spans, from: now() - ${hours}h
 | filter isNotNull(thousandeyes.test.name)
-| filter contains(thousandeyes.test.name, ${dqlString(term)}, caseSensitive: false)
 | summarize lastSeen = max(start_time), by: {testName = thousandeyes.test.name, testId = toString(thousandeyes.test.id)}
 | sort lastSeen desc
-| limit 50`;
+| limit 10000`;
 }
 
 export function buildTestTracesQuery(test: ThousandEyesTest, hours: 2 | 24 | 168): string {

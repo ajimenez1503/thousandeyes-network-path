@@ -2,12 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import { getIntent } from "@dynatrace-sdk/navigation";
 import { useDql } from "@dynatrace-sdk/react-hooks";
 import { Button } from "@dynatrace/strato-components/buttons";
-import { TextInput } from "@dynatrace/strato-components/forms";
+import { Select, TextInput } from "@dynatrace/strato-components/forms";
 import { Flex } from "@dynatrace/strato-components/layouts";
 import { Heading, Paragraph } from "@dynatrace/strato-components/typography";
 import { TraceGraphView } from "../components/TraceGraphView";
 import {
-  buildTestSearchQuery,
+  buildTestListQuery,
   buildTestTracesQuery,
   buildTraceGraph,
   buildTraceQuery,
@@ -20,6 +20,10 @@ type Hours = 2 | 24 | 168;
 
 const TRACE_ID_PATTERN = /^[0-9a-f]{32}$/;
 
+function testKey(test: ThousandEyesTest): string {
+  return JSON.stringify([test.testId, test.testName]);
+}
+
 function formatTimestamp(value: string | null): string {
   if (!value) return "Time unavailable";
   const timestamp = new Date(value);
@@ -27,14 +31,11 @@ function formatTimestamp(value: string | null): string {
 }
 
 export const Home = () => {
-  const [draftTestName, setDraftTestName] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
   const [selectedTest, setSelectedTest] = useState<ThousandEyesTest | null>(null);
   const [draftTraceId, setDraftTraceId] = useState("");
   const [hours, setHours] = useState<Hours>(24);
   const [selectedTraceId, setSelectedTraceId] = useState<string | null>(null);
   const [inputError, setInputError] = useState("");
-  const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
     const payload: unknown = getIntent()?.getPayload();
@@ -48,14 +49,11 @@ export const Home = () => {
     if (TRACE_ID_PATTERN.test(traceId)) setSelectedTraceId(traceId);
   }, []);
 
-  const testSearchQuery = searchTerm
-    ? buildTestSearchQuery(searchTerm, hours)
-    : "fetch spans | limit 0";
   const {
     data: testData,
     error: testError,
     isLoading: testsLoading,
-  } = useDql<ThousandEyesTest>({ query: testSearchQuery }, { enabled: Boolean(searchTerm) });
+  } = useDql<ThousandEyesTest>({ query: buildTestListQuery(hours), maxResultRecords: 10000 });
 
   const testTracesQuery = selectedTest
     ? buildTestTracesQuery(selectedTest, hours)
@@ -77,19 +75,6 @@ export const Home = () => {
   } = useDql<TraceSpan>({ query: traceQuery }, { enabled: selectedTraceId !== null });
 
   const graph = useMemo(() => buildTraceGraph(spanData?.records || []), [spanData?.records]);
-
-  function searchTests(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const term = draftTestName.trim();
-    if (term.length < 2 || term.length > 100) {
-      setSearchError("Enter 2 to 100 characters of the test name.");
-      return;
-    }
-    setSearchError("");
-    setSearchTerm(term);
-    setSelectedTest(null);
-    setSelectedTraceId(null);
-  }
 
   function chooseTrace(rawTraceId: string | null) {
     const traceId = rawTraceId?.trim().toLowerCase() || "";
@@ -124,7 +109,7 @@ export const Home = () => {
   return (
     <Flex flexDirection="column" gap={20} padding={32}>
       <Heading level={1}>ThousandEyes Network Path</Heading>
-      <Paragraph>Find a ThousandEyes test, choose one of its recent traces, and view its service path.</Paragraph>
+      <Paragraph>Choose a ThousandEyes test, then a recent trace to view its service path.</Paragraph>
 
       <Flex gap={8} alignItems="center" flexFlow="wrap">
         <Paragraph>Search window:</Paragraph>
@@ -141,57 +126,40 @@ export const Home = () => {
         ))}
       </Flex>
 
-      <form onSubmit={searchTests}>
-        <Flex flexDirection="column" gap={12}>
-          <label htmlFor="test-name">Test name</label>
-          <Flex gap={12} alignItems="center" flexFlow="wrap">
-            <TextInput
-              id="test-name"
-              value={draftTestName}
-              onChange={setDraftTestName}
-              placeholder="Demo Google"
-              autoComplete="off"
-              style={{ width: 390 }}
-            />
-            <Button type="submit" variant="emphasized" color="primary" loading={testsLoading}>
-              Find tests
-            </Button>
-          </Flex>
-          {searchError && <Paragraph>{searchError}</Paragraph>}
-        </Flex>
-      </form>
-
-      {testError && <Paragraph>Test search failed: {testError.message}</Paragraph>}
-      {searchTerm && testsLoading && <Paragraph>Searching for tests…</Paragraph>}
-      {searchTerm && !testsLoading && !testError && testData && (
-        <Flex flexDirection="column" gap={8}>
-          <Heading level={2}>Matching tests</Heading>
-          {testData.records.length === 0 ? (
-            <Paragraph>No tests with that name had spans in the selected window.</Paragraph>
-          ) : (
-            testData.records.map((test) => (
-              <Button
-                key={`${test.testId || "unknown"}:${test.testName || "unknown"}`}
-                type="button"
-                variant={
-                  selectedTest?.testId === test.testId && selectedTest.testName === test.testName
-                    ? "accent"
-                    : "default"
-                }
-                onClick={() => {
-                  setSelectedTest(test);
-                  setSelectedTraceId(null);
-                }}
+      <Flex flexDirection="column" gap={8}>
+        <label htmlFor="test-select">ThousandEyes tests with traces in this window</label>
+        <Select<string>
+          id="test-select"
+          aria-label="ThousandEyes test"
+          value={selectedTest ? testKey(selectedTest) : null}
+          onChange={(value) => {
+            const test = testData?.records.find((candidate) => testKey(candidate) === value) || null;
+            setSelectedTest(test);
+            setSelectedTraceId(null);
+          }}
+          disabled={testsLoading || Boolean(testError) || !testData?.records.length}
+          style={{ width: 420 }}
+        >
+          <Select.Trigger placeholder={testsLoading ? "Loading tests…" : "Select a test"} width="full" />
+          <Select.Content loading={testsLoading}>
+            <Select.Filter />
+            {testData?.records.map((test) => (
+              <Select.Option
+                key={testKey(test)}
+                value={testKey(test)}
+                textValue={`${test.testName || "Unnamed test"} ${test.testId || ""}`}
               >
-                {test.testName || "Unnamed test"} · ID {test.testId || "unavailable"} · Last seen {formatTimestamp(test.lastSeen)}
-              </Button>
-            ))
-          )}
-          {testData.records.length === 50 && (
-            <Paragraph>Showing the 50 most recently seen matches. Refine the test name to narrow the list.</Paragraph>
-          )}
-        </Flex>
-      )}
+                {test.testName || "Unnamed test"} · ID {test.testId || "unavailable"}
+              </Select.Option>
+            ))}
+          </Select.Content>
+        </Select>
+        {testError && <Paragraph>Test list failed to load: {testError.message}</Paragraph>}
+        {testData?.records.length === 0 && <Paragraph>No ThousandEyes tests had spans in this window.</Paragraph>}
+        {testData?.records.length === 10000 && (
+          <Paragraph>Showing the 10,000 most recently seen tests. Use a shorter window if needed.</Paragraph>
+        )}
+      </Flex>
 
       {selectedTest && (
         <Flex flexDirection="column" gap={8}>
