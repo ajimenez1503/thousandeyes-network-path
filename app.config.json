@@ -1,0 +1,26 @@
+{
+  "$schema": "./.dt-app/app.config.schema.json",
+  "environmentUrl": "https://hkw74641.apps.dynatrace.com/",
+  "app": {
+    "name": "ThousandEyes Network Path",
+    "version": "0.1.1",
+    "description": "Show the services and connections recorded by one distributed trace",
+    "id": "my.trace.path.map",
+    "scopes": [
+      { "name": "storage:buckets:read", "comment": "Read Grail buckets" },
+      { "name": "storage:spans:read", "comment": "Read spans for the selected trace" },
+      { "name": "storage:smartscape:read", "comment": "Resolve Smartscape service names" }
+    ],
+    "intents": {
+      "view-trace-path": {
+        "description": "View the trace path",
+        "properties": {
+          "trace_id": {
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
