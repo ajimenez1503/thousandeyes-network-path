@@ -24,12 +24,8 @@
 *.sublime-workspace
 .history/
 
-# IDE - VSCode
-/.vscode/*
-!/.vscode/settings.json
-!/.vscode/tasks.json
-!/.vscode/launch.json
-!/.vscode/extensions.json
+# IDE - VS Code
+/.vscode/
 
 # System Files
 .DS_Store
